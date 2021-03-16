@@ -1,0 +1,8 @@
+---
+name: kie-execution-server
+sources:
+- https://github.com/fhirfactory/pegacorn-kie-execution-server.git
+version: 1.0.0-SNAPSHOT
+version: 1.0.0-SNAPSHOT
+description: KIE Execution Server
+icon: img/icons/camel.svg

@@ -1,0 +1,12 @@
+embed-server --server-config=standalone.xml
+batch
+
+/subsystem=security/security-domain=other:remove
+/subsystem=security/security-domain=other:add
+/subsystem=security/security-domain=other/authentication=classic:add
+
+/subsystem=security/security-domain=other/authentication=classic/login-module=other:add(code=UsersRoles,flag=required,module-options=[usersProperties=>"file:///${jboss.server.config.dir}/application-users.properties",rolesProperties=>,"file:///${jboss.server.config.dir}/application-roles.properties"])
+
+run-batch
+
+stop-embedded-server
