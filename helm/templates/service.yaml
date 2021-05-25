@@ -27,7 +27,7 @@ spec:
   - name: admin
     port: {{ add 1 .Values.basePort }}
     protocol: TCP
-    targetPort: 9990
+    targetPort: 9993
     nodePort: {{ if (.Values.serviceType) and (eq .Values.serviceType "NodePort")}} {{ add 1 .Values.basePort }} {{ end }}
   {{- end }}
   {{- if (.Values.wildflyEnableDebug) and (eq .Values.wildflyEnableDebug "Yes") }} 

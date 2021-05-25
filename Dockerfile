@@ -9,19 +9,15 @@ COPY kie-server-7.50.0.Final.war $JBOSS_HOME/standalone/deployments/kie-server.w
 COPY authentication.cli $JBOSS_HOME/bin/authentication.cli
 
 
-#######################################################################################################################################################################################
-# The base image enables SSL however the workbench fails when SSL is enabled so until that issue is investigated and fixed just override any changes the base image made to the       #
-# standalone.xml file.  Also any commands in the .sh files related to SSL have been commented out.       																	          #
-#                                    																																				  #
-# This is temporary.																																							      #		
-#######################################################################################################################################################################################
-RUN mv $JBOSS_HOME/standalone/configuration/standalone.xml $JBOSS_HOME/standalone/configuration/standalone.xml.orig && \
-    cp $JBOSS_HOME/standalone/configuration/standalone-full-ha.xml $JBOSS_HOME/standalone/configuration/standalone.xml
-    
-    
-
 RUN $JBOSS_HOME/bin/jboss-cli.sh --file=$JBOSS_HOME/bin/authentication.cli && \
 rm -rf $JBOSS_HOME/standalone/configuration/standalone_xml_history/current
+
+ENV KIE_SERVER_USER kieserver
+ENV KIE_SERVER_PWD kieserver1!
+# When using this image against jboss/jbpm-workbench-showcase use /jbpm-console/rest/controller
+# ENV KIE_SERVER_CONTROLLER http://localhost:8080/kie-wb/rest/controller
+ENV KIE_SERVER_CONTROLLER_USER admin
+ENV KIE_SERVER_CONTROLLER_PWD admin
 
 
 COPY start-wildfly.sh /

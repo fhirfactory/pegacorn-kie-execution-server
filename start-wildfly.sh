@@ -3,6 +3,32 @@
 
 echo "Staring start-wildfly.sh as user $(whoami) with params $@"
 
+
+# If not server identifier set via docker env variable, use the container's hostname as server id.
+if [ ! -n "$KIE_SERVER_ID" ]; then
+    export KIE_SERVER_ID=kie-server-$HOSTNAME
+fi
+echo "Using '$KIE_SERVER_ID' as KIE server identifier"
+
+# If this KIE execution server container is linked with some KIE Workbench container, the following environment variables will be present, so configure the application arguments based on their values.
+if [ -n "$KIE_WB_PORT_8080_TCP" ] &&  [ -n "$KIE_WB_ENV_KIE_CONTEXT_PATH" ] &&  [ -n "$KIE_WB_PORT_8080_TCP_ADDR" ]; then
+    
+    # If not public IP configured using the DOCKER_IP env, obtain the internal network address for this container.
+    if [ ! -n "$DOCKER_IP" ]; then
+    # Obtain current container's IP address.
+    DOCKER_IP=$(/sbin/ifconfig eth0 | grep 'inet' | cut -d: -f2 | awk '{ print $2}')
+    fi
+    # If not public port configured using the DOCKER_PORT env, use the default internal network HTTP port.
+    if [ ! -n "$DOCKER_PORT" ]; then
+        DOCKER_PORT=8080
+    fi
+
+    # KIE Workbench environment variables are set. Proceed with automatic configuration.
+    echo "Detected successful link for KIE Workbench container. Applying automatic configuration for the link..."
+    export KIE_SERVER_CONTROLLER="https://$KIE_WB_PORT_8080_TCP_ADDR/$KIE_WB_ENV_KIE_CONTEXT_PATH/rest/controller"
+    export KIE_MAVEN_REPO="https://$KIE_WB_PORT_8080_TCP_ADDR/$KIE_WB_ENV_KIE_CONTEXT_PATH/maven2"
+fi
+
 #From https://hub.docker.com/r/jboss/wildfly
 #and https://unix.stackexchange.com/questions/444946/how-can-we-run-a-command-stored-in-a-variable
 wildfly_runner=( /opt/jboss/wildfly/bin/standalone.sh -b 0.0.0.0 )
@@ -13,6 +39,8 @@ fi
 #whether an admin user is specified.  Also tested exposing this port in the Kubernetes Service without the user added and access was not 
 #possible to the management console
 wildfly_runner+=( -bmanagement 0.0.0.0 )
+
+wildfly_runner+=( -Dorg.kie.server.controller=$KIE_SERVER_CONTROLLER -Dorg.kie.server.controller.user=$KIE_SERVER_CONTROLLER_USER -Dorg.kie.server.controller.pwd=$KIE_SERVER_CONTROLLER_PWD )
 
 # See http://tldp.org/LDP/abs/html/comparison-ops.html
 if [ -n "$WILDFLY_ENABLE_DEBUG" ] && [ "$WILDFLY_ENABLE_DEBUG" = 'Yes' ]; then
@@ -51,12 +79,12 @@ sed -i "s+<logger category=\"sun.rmi\"+<logger category=\"$PEGACORN_LOG_CATEGORY
 sed -i "s+<logger category=\"sun.rmi\"+<logger category=\"$AETHER_LOG_CATEGORY\"><level name=\"$AETHER_LOG_LEVEL\"/></logger><logger category=\"sun.rmi\"+" "$JBOSS_HOME/standalone/configuration/standalone.xml"
 
 #From https://stackoverflow.com/questions/55112904/mutual-tls-on-apache-camel
-#wildfly_runner+=( -Djavax.net.ssl.keyStore="/var/lib/pegacorn-keystores/keystore.jks" )
-#wildfly_runner+=( -Djavax.net.ssl.keyStorePassword="${KEY_PASSWORD}" )
+wildfly_runner+=( -Djavax.net.ssl.keyStore="/var/lib/pegacorn-keystores/keystore.jks" )
+wildfly_runner+=( -Djavax.net.ssl.keyStorePassword="${KEY_PASSWORD}" )
 
 #From https://stackoverflow.com/questions/48521776/wildfly-11-use-certificate-to-make-https-requests
-#wildfly_runner+=( -Djavax.net.ssl.trustStore="/var/lib/pegacorn-keystores/truststore.jks" )
-#wildfly_runner+=( -Djavax.net.ssl.trustStorePassword="${TRUSTSTORE_PASSWORD}" )
+wildfly_runner+=( -Djavax.net.ssl.trustStore="/var/lib/pegacorn-keystores/truststore.jks" )
+wildfly_runner+=( -Djavax.net.ssl.trustStorePassword="${TRUSTSTORE_PASSWORD}" )
 
 echo " "
 echo "Starting wildfly with the following configuration:"

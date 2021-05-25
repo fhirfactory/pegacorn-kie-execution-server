@@ -16,23 +16,23 @@ addgroup jboss workaround
 
 #echo "Copying certificates like /var/lib/pegacorn-ssl-certs/ca.cer to /etc/ssl/certs/"
 
-#cp /var/lib/pegacorn-ssl-certs/ca.cer /etc/ssl/certs/pegacorn-ca.cer
+cp /var/lib/pegacorn-ssl-certs/ca.cer /etc/ssl/certs/pegacorn-ca.cer
 
-#chmod 400 /etc/ssl/certs/pegacorn-ca.cer
-#chown jboss:jboss /etc/ssl/certs/pegacorn-ca.cer 
+chmod 400 /etc/ssl/certs/pegacorn-ca.cer
+chown jboss:jboss /etc/ssl/certs/pegacorn-ca.cer 
 
-#ls -la /etc/ssl/certs/
+ls -la /etc/ssl/certs/
 
-#mkdir -p /var/lib/pegacorn-keystores
-#cp /var/lib/pegacorn-ssl-certs/$KUBERNETES_SERVICE_NAME.$MY_POD_NAMESPACE.jks /var/lib/pegacorn-keystores/keystore.jks
-#cp /var/lib/pegacorn-ssl-certs/truststore.jks /var/lib/pegacorn-keystores/truststore.jks
+mkdir -p /var/lib/pegacorn-keystores
+cp /var/lib/pegacorn-ssl-certs/$KUBERNETES_SERVICE_NAME.$MY_POD_NAMESPACE.jks /var/lib/pegacorn-keystores/keystore.jks
+cp /var/lib/pegacorn-ssl-certs/pegacorn-kie-execution-server.site-a-truststore.jks /var/lib/pegacorn-keystores/truststore.jks
 
-#chmod 400 /var/lib/pegacorn-keystores/keystore.jks
-#chown jboss:jboss /var/lib/pegacorn-keystores/keystore.jks 
-#chmod 400 /var/lib/pegacorn-keystores/truststore.jks
-#chown jboss:jboss /var/lib/pegacorn-keystores/truststore.jks 
+chmod 400 /var/lib/pegacorn-keystores/keystore.jks
+chown jboss:jboss /var/lib/pegacorn-keystores/keystore.jks 
+chmod 400 /var/lib/pegacorn-keystores/truststore.jks
+chown jboss:jboss /var/lib/pegacorn-keystores/truststore.jks 
 
-#ls -la /var/lib/pegacorn-keystores/
+ls -la /var/lib/pegacorn-keystores/
 
 # then start /start-wildfly.sh script as jboss user
 # NOTE: gosu is used instead of su-exec as the wildfly docker image is based on centos, whereas the postgres one is based on alpine,
