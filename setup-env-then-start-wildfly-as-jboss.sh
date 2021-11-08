@@ -25,7 +25,7 @@ ls -la /etc/ssl/certs/
 
 mkdir -p /var/lib/pegacorn-keystores
 cp /var/lib/pegacorn-ssl-certs/$KUBERNETES_SERVICE_NAME.$MY_POD_NAMESPACE.jks /var/lib/pegacorn-keystores/keystore.jks
-cp /var/lib/pegacorn-ssl-certs/pegacorn-kie-execution-server.site-a-truststore.jks /var/lib/pegacorn-keystores/truststore.jks
+cp /var/lib/pegacorn-ssl-certs/truststore.jks /var/lib/pegacorn-keystores/truststore.jks
 
 chmod 400 /var/lib/pegacorn-keystores/keystore.jks
 chown jboss:jboss /var/lib/pegacorn-keystores/keystore.jks 
